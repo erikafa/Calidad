@@ -74,10 +74,8 @@ if (isset($argv[4]))
 }
 print 'Files will be generated/updated in directory '.$dir."\n";
 
-if ($argv[2] != 'all')
+if ($argv[2] != 'all' && ! is_dir($dir.'/'.$argv[2]))
 {
-	if (! is_dir($dir.'/'.$argv[2]))
-	{
 		print 'Create directory '.$dir.'/'.$argv[2]."\n";
 		$result=mkdir($dir.'/'.$argv[2]);
 		if (! $result)
@@ -85,7 +83,7 @@ if ($argv[2] != 'all')
 			$db->close();
 			return -1;
 		}
-	}
+
 }
 
 require_once DOL_DOCUMENT_ROOT."/../dev/translation/autotranslator.class.php";

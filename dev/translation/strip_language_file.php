@@ -21,7 +21,6 @@
  * Compares a secondary language translation file with its primary
  * language file and strips redundant translations.
  *
- * Todo: Check if it works with multi byte (mb_*) character sets!
  *
  * Usage:
  * cd htdocs/langs
@@ -35,7 +34,6 @@
  * secondary string redundant -> strip and warning
  * secondary string not in primary -> strip and warning
  * secondary string has no value -> strip and warning
- * secondary string != primary string -> secondary.lang.delta
  */
 
 /**
@@ -76,10 +74,12 @@ $aPrimary = array();
 $aSecondary = array();
 $aEnglish = array();
 
+const HT = 'htdocs/langs/';
+
 // Define array $filesToProcess
 if ($filesToProcess == 'all')
 {
-	$dir = new DirectoryIterator('htdocs/langs/'.$lPrimary);
+	$dir = new DirectoryIterator(HT.$lPrimary);
 	while($dir->valid()) {
 		if(!$dir->isDot() && $dir->isFile() && ! preg_match('/^\./', $dir->getFilename())) {
 			$files[] =  $dir->getFilename();
@@ -88,7 +88,9 @@ if ($filesToProcess == 'all')
 	}
 	$filesToProcess=$files;
 }
-else $filesToProcess=explode(',', $filesToProcess);
+else{
+	 $filesToProcess=explode(',', $filesToProcess);
+	}
 
 // Arguments should be OK here.
 
@@ -96,9 +98,9 @@ else $filesToProcess=explode(',', $filesToProcess);
 // Loop on each file
 foreach($filesToProcess as $fileToProcess)
 {
-	$lPrimaryFile = 'htdocs/langs/'.$lPrimary.'/'.$fileToProcess;
-	$lSecondaryFile = 'htdocs/langs/'.$lSecondary.'/'.$fileToProcess;
-	$lEnglishFile = 'htdocs/langs/'.$lEnglish.'/'.$fileToProcess;
+	$lPrimaryFile = HT.$lPrimary.'/'.$fileToProcess;
+	$lSecondaryFile = HT.$lSecondary.'/'.$fileToProcess;
+	$lEnglishFile = HT.$lEnglish.'/'.$fileToProcess;
 	$output = $lSecondaryFile . '.delta';
 
 	print "---- Process language file ".$lSecondaryFile."\n";
@@ -125,6 +127,9 @@ foreach($filesToProcess as $fileToProcess)
 	}
 
 	// Start reading and parsing Secondary
+	const TEXT = "/^\w*#/";
+	const TEXT2 = "/^\w*$/";
+	const FAIL = "Unexpected fgets() fail";
 
 	if ( $handle = fopen($lSecondaryFile, 'r') )
 	{
@@ -135,11 +140,11 @@ foreach($filesToProcess as $fileToProcess)
 			$cnt++;
 
 			// strip comments
-			if ( preg_match("/^\w*#/", $line) ) {
+			if ( preg_match(TEXT, $line) ) {
 				continue;
 			}
 			// strip empty lines
-			if ( preg_match("/^\w*$/", $line) ) {
+			if ( preg_match(TEXT, $line) ) {
 				continue;
 			}
 
@@ -168,7 +173,7 @@ foreach($filesToProcess as $fileToProcess)
 		if ( ! feof($handle) )
 		{
 			$rc = 5;
-			$msg = "Unexpected fgets() fail";
+			$msg = FAIL;
 			print $msg . " (rc=$rc).\n";
 			exit($rc);
 		}
@@ -193,11 +198,11 @@ foreach($filesToProcess as $fileToProcess)
 			$cnt++;
 
 			// strip comments
-			if ( preg_match("/^\w*#/", $line) ) {
+			if ( preg_match(TEXT, $line) ) {
 				continue;
 			}
 			// strip empty lines
-			if ( preg_match("/^\w*$/", $line) ) {
+			if ( preg_match(TEXT2, $line) ) {
 				continue;
 			}
 
@@ -226,7 +231,7 @@ foreach($filesToProcess as $fileToProcess)
 		if ( ! feof($handle) )
 		{
 			$rc = 5;
-			$msg = "Unexpected fgets() fail";
+			$msg = FAIL;
 			print $msg . " (rc=$rc).\n";
 			exit($rc);
 		}
@@ -264,11 +269,11 @@ foreach($filesToProcess as $fileToProcess)
 			$cnt++;
 
 			// strip comments
-			if ( preg_match("/^\w*#/", $line) ) {
+			if ( preg_match(TEXT, $line) ) {
 				continue;
 			}
 			// strip empty lines
-			if ( preg_match("/^\w*$/", $line) ) {
+			if ( preg_match(TEXT2, $line) ) {
 				continue;
 			}
 
@@ -303,16 +308,16 @@ foreach($filesToProcess as $fileToProcess)
 
 			// ----- Process output now -----
 
-			//print "Found primary key = ".$key."\n";
+			
 
 			// Key not in other file
 			if (in_array($key, $arrayofkeytoalwayskeep) || preg_match('/^FormatDate/', $key) || preg_match('/^FormatHour/', $key))
 			{
-				//print "Key $key is a key we always want to see into secondary file (line: $cnt).\n";
+				
 			}
 			elseif ( ! array_key_exists($key, $aSecondary))
 			{
-				//print "Key $key does NOT exist in secondary language (line: $cnt).\n";
+				/
 				continue;
 			}
 
@@ -323,13 +328,13 @@ foreach($filesToProcess as $fileToProcess)
 				|| in_array($key, $arrayofkeytoalwayskeep) || preg_match('/^FormatDate/', $key) || preg_match('/^FormatHour/', $key)
 				)
 			{
-				//print "Key $key differs (aSecondary=".$aSecondary[$key].", aPrimary=".$aPrimary[$key].", aEnglish=".$aEnglish[$key].") so we add it into new secondary language (line: $cnt).\n";
+				
 				fwrite($oh, $key."=".(empty($aSecondary[$key])?$aPrimary[$key]:$aSecondary[$key])."\n");
 			}
 		}
 		if ( ! feof($handle) ) {
 			$rc = 7;
-			$msg = "Unexpected fgets() fail";
+			$msg = FAIL;
 			print $msg . " (rc=$rc).\n";
 			exit($rc);
 		}

@@ -25,7 +25,7 @@
  * Class to parse language files and translate them
  * This is a language automatic translator parser for Dolibarr
  */
-class autoTranslator
+class AutoTranslator
 {
 	private $_translatedFiles = array();
 	private $_destlang = '';
@@ -36,7 +36,7 @@ class autoTranslator
 	private $_time_end;
 	private $_outputpagecode = 'UTF-8';
 	private $_apikey;
-	//private $_outputpagecode = 'ISO-8859-1';
+	
 	const DIR_SEPARATOR = '/';
 
 
@@ -62,7 +62,7 @@ class autoTranslator
         $this->_apikey = $_apikey;
 
 		// Translate
-		//ini_set('default_charset','UTF-8');
+		
 		ini_set('default_charset', $this->_outputpagecode);
 		$this->parseRefLangTranslationFiles();
 	}
@@ -79,7 +79,9 @@ class autoTranslator
 		$counter = 1;
 		foreach($files as $file)
 		{
-			if ($this->_limittofile && $this->_limittofile != $file) continue;
+			if ($this->_limittofile && $this->_limittofile != $file){
+				continue;
+			} 
 			$counter++;
 			$fileContent = null;
 			$refPath = $this->_langDir.$this->_refLang.self::DIR_SEPARATOR.$file;
@@ -96,19 +98,36 @@ class autoTranslator
 				$arraytmp=dol_dir_list($this->_langDir, 'directories', 0);
 				foreach($arraytmp as $dirtmp)
 				{
-					if ($dirtmp['name'] === $this->_refLang) continue;	// We discard source language
+					if ($dirtmp['name'] === $this->_refLang){
+						continue;	// We discard source language
+					} 
 					$tmppart=explode('_', $dirtmp['name']);
-					if (preg_match('/^en/i', $dirtmp['name']))  continue;	// We discard en_* languages
-					if (preg_match('/^fr/i', $dirtmp['name']))  continue;	// We discard fr_* languages
-					if (preg_match('/^es/i', $dirtmp['name']))  continue;	// We discard es_* languages
-					if (preg_match('/ca_ES/i', $dirtmp['name']))  continue;	// We discard es_CA language
-					if (preg_match('/pt_BR/i', $dirtmp['name']))  continue;	// We discard pt_BR language
-                    if (preg_match('/nl_BE/i', $dirtmp['name']))  continue;  // We discard nl_BE language
-					if (preg_match('/^\./i', $dirtmp['name']))  continue;	// We discard files .*
-					if (preg_match('/^CVS/i', $dirtmp['name']))  continue;	// We discard CVS
+					if (preg_match('/^en/i', $dirtmp['name'])){
+						  continue;	// We discard en_* languages
+					}
+					if (preg_match('/^fr/i', $dirtmp['name'])){
+						  continue;	// We discard fr_* languages
+					}
+					if (preg_match('/^es/i', $dirtmp['name'])){
+						  continue;	// We discard fr_* languages
+					}
+					if (preg_match('/ca_ES/i', $dirtmp['name'])){
+						  continue;	// We discard fr_* languages
+					}
+					if (preg_match('/pt_BR/i', $dirtmp['name'])){
+						  continue;	// We discard fr_* languages
+					}
+                    if (preg_match('/nl_BE/i', $dirtmp['name'])){
+                    	  continue;  // We discard nl_BE language
+                    }
+					if (preg_match('/^\./i', $dirtmp['name'])){
+						  continue;	// We discard files .*
+					}
+					if (preg_match('/^CVS/i', $dirtmp['name'])){
+						  continue;	// We discard CVS
+					}
 					$targetlangs[]=$dirtmp['name'];
 				}
-				//var_dump($targetlangs);
 			}
 
 			// Process translation of source file for each target languages
@@ -143,7 +162,6 @@ class autoTranslator
 
 				$this->updateTranslationFile($destPath, $file, $my_destlang);
 				echo "New translated lines: " . $newlines . "<br>\n";
-				//if ($counter ==3) die('fim');
 			}
 		}
 	}
@@ -173,7 +191,6 @@ class autoTranslator
 			fwrite($fp, "// STOP - Lines generated via autotranslator.php tool (".$this->_time_end.").\n");
 			fclose($fp);
 		}
-		return;
 	}
 
 	/**
@@ -192,7 +209,6 @@ class autoTranslator
 		fwrite($fp, " * Generation date " . $this->_time. "\n");
 		fwrite($fp, " */\n");
 		fclose($fp);
-		return;
 	}
 
 	/**
@@ -207,13 +223,9 @@ class autoTranslator
 	 */
 	private function translateFileLine($content, $file, $key, $value, $my_destlang)
 	{
-
-		//print "key    =".$key."\n";
 		foreach($content as $line) {
 			$destKey = $this->getLineKey($line);
-			$destValue = $this->getLineValue($line);
-			// If translated return
-			//print "destKey=".$destKey."\n";
+			// If translated retu
 			if ( trim($destKey) == trim($key) )
 			{	// Found already existing translation (key already exits in dest file)
 				return 0;
@@ -228,13 +240,19 @@ class autoTranslator
             $val=$value;
         } else {
 			// If not translated then translate
-			if ($this->_outputpagecode == 'UTF-8') $val=$this->translateTexts(array($value), substr($this->_refLang, 0, 2), substr($my_destlang, 0, 2));
-			else $val=utf8_decode($this->translateTexts(array($value), substr($this->_refLang, 0, 2), substr($my_destlang, 0, 2)));
+			if ($this->_outputpagecode == 'UTF-8'){
+				$val=$this->translateTexts(array($value), substr($this->_refLang, 0, 2), substr($my_destlang, 0, 2));
+			} 
+			else{
+				 $val=utf8_decode($this->translateTexts(array($value), substr($this->_refLang, 0, 2), substr($my_destlang, 0, 2)));
+			}
 		}
 
 		$val=trim($val);
 
-		if (empty($val)) return 0;
+		if (empty($val)){
+			 return 0;
+		}
 
 		$this->_translatedFiles[$file][] = $key . '=' . $val ;
 		return 1;
@@ -294,25 +312,22 @@ class autoTranslator
 	{
 		// We want to be sure that src_lang and dest_lang are using 2 chars only
 		$tmp=explode('_', $src_lang);
-		if (! empty($tmp[1]) && $tmp[0] == $tmp[1]) $src_lang=$tmp[0];
+		if (! empty($tmp[1]) && $tmp[0] == $tmp[1]){
+			 $src_lang=$tmp[0];
+		}
 		$tmp=explode('_', $dest_lang);
-		if (! empty($tmp[1]) && $tmp[0] == $tmp[1]) $dest_lang=$tmp[0];
-
-		//setting language pair
-		$lang_pair = $src_lang.'|'.$dest_lang;
+		if (! empty($tmp[1]) && $tmp[0] == $tmp[1]){
+			 $dest_lang=$tmp[0];
+		}
 
 		$src_text_to_translate=preg_replace('/%s/', 'SSSSS', implode('', $src_texts));
 		$src_text_to_translate=preg_replace('/'.preg_quote('\n\n').'/', ' NNNNN ', $src_text_to_translate);
 
 		// Define GET URL v1
-		//$url = "http://ajax.googleapis.com/ajax/services/language/translate?v=1.0&q=".urlencode($src_text_to_translate)."&langpair=".urlencode($lang_pair);
 		// Example: http://ajax.googleapis.com/ajax/services/language/translate?v=1.0&q=Setup%20area&langpair=en_US|fr_FR
         // Define GET URL v2
 		$url = "https://www.googleapis.com/language/translate/v2?key=".$this->_apikey."&q=".urlencode($src_text_to_translate)."&source=".urlencode($src_lang)."&target=".urlencode($dest_lang);
 		// Example: https://www.googleapis.com/language/translate/v2?key=_apikey&q=Setup%20area&source=en_US&target=fr_FR
-
-		// Send request
-		//print "Url to translate: ".$url."\n";
 
 		if (! function_exists("curl_init"))
 		{
@@ -330,21 +345,20 @@ class autoTranslator
 
 		// now, process the JSON string
 		$json = json_decode($body, true);
+		const STATUS = 'responseStatus';
 
-		if ((! empty($json['responseStatus']) && $json['responseStatus'] != 200)
+		if ((! empty($json[STATUS]) && $json[STATUS] != 200)
 		|| count($json['data']['translations']) == 0)
 		{
-		    print "Error: ".$json['responseStatus']." ".$url."\n";
+		    print "Error: ".$json[STATUS]." ".$url."\n";
 			return false;
 		}
 
 		$rep=$json['data']['translations'][0]['translatedText'];
 		$rep=preg_replace('/SSSSS/i', '%s', $rep);
 		$rep=preg_replace('/NNNNN/i', '\n\n', $rep);
-		$rep=preg_replace('/&#39;/i', '\'', $rep);
+		return $rep=preg_replace('/&#39;/i', '\'', $rep);
 
-		//print "OK ".join('',$src_texts).' => '.$rep."\n";
-
-		return $rep;
+		
     }
 }
